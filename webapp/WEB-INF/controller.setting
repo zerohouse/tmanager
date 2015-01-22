@@ -1,0 +1,6 @@
+{
+	"url" : "http://localhost:8080",
+	"controllerPath" : "sapyo.controller",
+	"jspPath" : "/WEB-INF/jsp/",
+	"charEncoding" : "utf-8"
+}

@@ -1,0 +1,27 @@
+DROP TABLE IF EXISTS `agent`;
+CREATE TABLE `agent` (
+	`id` VARCHAR(32) NOT NULL,
+	`name` VARCHAR(64) NOT NULL,
+	PRIMARY KEY(`id`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;
+
+DROP TABLE IF EXISTS `agent_relation`;
+CREATE TABLE `agent_relation` (
+	`parent` VARCHAR(32) NOT NULL,
+	`child` VARCHAR(32) NOT NULL,
+	PRIMARY KEY(`parent`),
+	index(`child`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;
+
+
+DROP TABLE IF EXISTS `schedule`;
+CREATE TABLE `schedule` (
+	`id` INTEGER NOT NULL AUTO_INCREMENT,
+	`startTime` DATETIME NOT NULL,
+	`endTime` DATETIME NOT NULL,
+	`agentId` DATETIME NOT NULL,
+	`head` VARCHAR(32) NOT NULL,
+	`body` VARCHAR(500) NOT NULL,
+	PRIMARY KEY(`id`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;
+
