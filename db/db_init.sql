@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS `agent`;
 CREATE TABLE `agent` (
 	`id` INTEGER NOT NULL AUTO_INCREMENT,
-	`name` VARCHAR(64) NOT NULL,
+	`name` VARCHAR(64) NOT NULL DEFAULT '',
 	PRIMARY KEY(`id`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;
 
@@ -9,8 +9,8 @@ DROP TABLE IF EXISTS `agent_relation`;
 CREATE TABLE `agent_relation` (
 	`parent` INTEGER NOT NULL,
 	`child` INTEGER NOT NULL,
-	PRIMARY KEY(`parent`),
-	index(`child`)
+	PRIMARY KEY(`parent`, `child`),
+	index(`child`), index(`parent`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;
 
 
@@ -20,8 +20,17 @@ CREATE TABLE `schedule` (
 	`agentId` INTEGER NOT NULL,
 	`startTime` DATETIME NOT NULL,
 	`endTime` DATETIME NOT NULL,
-	`head` VARCHAR(32) NOT NULL,
-	`body` VARCHAR(500) NOT NULL,
+	`head` VARCHAR(32) NOT NULL DEFAULT '',
+	`body` VARCHAR(500) NOT NULL DEFAULT '',
 	PRIMARY KEY(`id`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;
 
+DROP TABLE IF EXISTS `line`;
+CREATE TABLE `line` (
+	`id` INTEGER NOT NULL AUTO_INCREMENT,
+	`agentId` INTEGER NOT NULL,
+	`time` DATETIME NOT NULL,
+	`head` VARCHAR(32) NOT NULL DEFAULT '',
+	`body` VARCHAR(500) NOT NULL DEFAULT '',
+	PRIMARY KEY(`id`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;

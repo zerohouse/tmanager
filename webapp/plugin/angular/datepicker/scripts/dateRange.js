@@ -4,7 +4,7 @@ var Module = angular.module('datePicker');
 
 Module.directive('dateRange', function () {
   return {
-    templateUrl: 'templates/daterange.html',
+    templateUrl: '/templates/daterange.html',
     scope: {
       start: '=',
       end: '='

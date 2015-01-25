@@ -1,3 +1,12 @@
+Date.prototype.getString = function () {
+    var day = this.getDate();
+    var month = this.getMonth() + 1;
+    var year = this.getFullYear();
+    var hours = this.getHours();
+    var min = this.getMinutes();
+    return year + "-" + month + "-" + day + " "+hours+":"+min;
+}
+
 var app = angular.module('onemanager', ['datePicker', 'ui.bootstrap']);
 
 app.directive('ngEnter', function () {
@@ -15,6 +24,13 @@ app.directive('ngEnter', function () {
 });
 
 app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $timeout, $http) {
+
+    var pageUrl = window.location.pathname.split("/");
+    var agentId = pageUrl[pageUrl.length - 1];
+    $scope.pageAgent = {
+        id: agentId
+    };
+
     $scope.selectedHead = {};
     $scope.selectedBody = {};
 
@@ -38,7 +54,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
 
     var timer = {};
     var url = {
-        refresh: "/agents/between",
+        refresh: "/agents/refresh",
         newAgent: "/agents/new",
         updateAgent: "/agents/update",
         deleteAgent: "/agents/delete",
@@ -53,10 +69,10 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     var request = function (type, response, data) {
         clearTimeout(timer[type]);
         timer[type] = setTimeout(function () {
-            $http(postRequest(url[type], data)).success(function (result) {
+            $http(postRequest("/api" + url[type], data)).success(function (result) {
                 response(result);
             });
-        }, 1000);
+        }, 300);
     };
 
 
@@ -82,6 +98,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     angular.element($(this)).scope().$apply();
                 },
                 stop: function (event, ui) {
+                	$scope.updateSchedule(angular.element($(this)).scope().schedule, true);
                     if (ui.position.left == ui.originalPosition.left)
                         return;
                     var diff = (ui.position.left - ui.originalPosition.left) / width;
@@ -94,6 +111,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     var moved = $scope.agents[agentIndex].schedules.splice(scheduleIndex, scheduleIndex + 1)[0];
                     moved.agentId = $scope.agents[agentIndex + diff].id;
                     $scope.agents[agentIndex + diff].schedules.push(moved);
+                    $scope.updateSchedule(angular.element($(this)).scope().schedule, true);
                     setDraggableAndResizable();
                 }
             }).resizable({
@@ -104,6 +122,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     var startTime = angular.element($(this)).scope().schedule.startTime.getTime();
                     angular.element($(this)).scope().schedule.endTime.setTime(startTime + diff);
                     angular.element($(this)).scope().$apply();
+                    $scope.updateSchedule(angular.element($(this)).scope().schedule, true);
                     noClick = true;
                 }
             });
@@ -121,6 +140,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     angular.element($(this)).scope().$apply();
                 },
                 stop: function (event, ui) {
+                	$scope.updateLine(angular.element($(this)).scope().line, true);
                     if (ui.position.left == ui.originalPosition.left)
                         return;
                     var diff = (ui.position.left - ui.originalPosition.left) / width;
@@ -133,6 +153,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     var moved = $scope.agents[agentIndex].lines.splice(lineIndex, lineIndex + 1)[0];
                     moved.agentId = $scope.agents[agentIndex + diff].id;
                     $scope.agents[agentIndex + diff].lines.push(moved);
+                    $scope.updateLine(angular.element($(this)).scope().line, true);
                     setDraggableAndResizable();
                 }
             })
@@ -278,13 +299,15 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         $scope.timeQuantums = quantum;
         request('refresh', function (response) {
             $scope.agents = response;
-            watchSchedulesAndLines();
-        });
-        setDraggableAndResizable();
+            agentsParseDate();
+            setDraggableAndResizable();
+        }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: $scope.pageAgent.id});
     };
 
 
     $scope.stop = function (event) {
+        if (event == undefined)
+            return;
         event.stopPropagation();
     };
 
@@ -311,24 +334,9 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     $scope.agents = [];
 
     var agentProto = function () {
-        this.id = 0;
         this.name = "";
         this.schedules = [];
         this.lines = [];
-    };
-
-    var scheduleProto = function () {
-        this.agentId = 0;
-        this.startTime = new Date();
-        this.endTime = new Date();
-        this.head = "";
-        this.body = "";
-    };
-
-    var lineProto = function () {
-        this.time = new Date();
-        this.head = "";
-        this.body = "";
     };
 
     // 에이전트 추가
@@ -336,11 +344,9 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         request('newAgent', function (response) {
             var agent = new agentProto();
             agent.id = response.id;
+            var size = $scope.agents.length;
             $scope.agents.push(agent);
-            $scope.$watch(function (scope) {
-                return agent.name;
-            }, updateAgent(agent.id, agent.name));
-        });
+        }, {agentId: $scope.pageAgent.id});
     };
 
 
@@ -353,7 +359,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                 return;
             var index = $scope.agents.indexOf(agent);
             $scope.agents.splice(index, index + 1);
-        }, {agentId: agent.id});
+        }, {agentRelation: JSON.stringify({parent: $scope.pageAgent.id, child: agent.id})});
     };
 
 
@@ -361,37 +367,36 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     $scope.newSchedule = function (agent) {
         if ($scope.timeQuantums == undefined)
             return;
-        var schedule = new scheduleProto();
+        var schedule = {};
         schedule.agentId = agent.id;
         schedule.startTime = new Date($scope.timeQuantums[0].getTime());
         schedule.endTime = new Date($scope.timeQuantums[0].getTime() + unit().tdHeightTime);
+        var forSend = {};
+        forSend.agentId = agent.id;
+        forSend.startTime = schedule.startTime.getString();
+        forSend.endTime = schedule.endTime.getString();
         request('newSchedule', function (response) {
             schedule.id = response.id;
             agent.schedules.push(schedule);
-            $scope.$watch(function (scope) {
-                return schedule;
-            }, updateSchedule(schedule));
             setDraggableAndResizable();
-        }, {schedule: schedule});
+        }, {schedule: JSON.stringify(forSend)});
     };
 
     //새로운 라인
     $scope.newLine = function (agent) {
         if ($scope.timeQuantums == undefined)
             return;
-        var line = new lineProto();
+        var line = {};
         line.agentId = agent.id;
         line.time = new Date($scope.timeQuantums[0].getTime());
-        agent.lines.push(line);
-        setDraggableAndResizable();
+        var forSend = {};
+        forSend.agentId = agent.id;
+        forSend.time = line.time.getString();
         request('newLine', function (response) {
-            line.id = line.id;
-            agent.schedules.push(line);
-            $scope.$watch(function (scope) {
-                return line;
-            }, updateLine(line));
+            line.id = response.id;
+            agent.lines.push(line);
             setDraggableAndResizable();
-        }, {line: line});
+        }, {line: JSON.stringify(forSend)});
     };
 
 
@@ -426,35 +431,14 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
 
 
     // 워치 변수들
-    $scope.$watch(function (scope) {
-        return scope.start;
-    }, refresh);
+    $scope.$watch('start', refresh);
 
-    $scope.$watch(function (scope) {
-        return scope.end;
-    }, refresh);
+    $scope.$watch('end', refresh);
 
-    $scope.$watch(function (scope) {
-        return scope.scale;
-    }, refresh);
+    $scope.$watch('scale', refresh);
 
+    //$scope.$watchGroup -> angular 버전이 낮아서 아직 지원 안함..ㅜ
 
-    var watchSchedulesAndLines = function () {
-        var keys = Object.keys($scope.agents);
-        for (var i = 0; i < keys.length; i++) {
-            $scope.agents[keys[i]].modify = false;
-            for (var j = 0; j < $scope.agents[keys[i]].schedules.length; j++) {
-                $scope.$watch(function (scope) {
-                    return scope.agents[keys[i]].schedules[j];
-                }, updateSchedule($scope.agents[keys[i]].schedules[j]));
-            }
-            for (var j = 0; j < $scope.agents[keys[i]].lines.length; j++) {
-                $scope.$watch(function (scope) {
-                    return scope.agents[keys[i]].lines[j];
-                }, updateLine($scope.agents[keys[i]].lines[j]));
-            }
-        }
-    };
 
     var ifFailsWarring = function (response) {
         if (response.success)
@@ -462,32 +446,68 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         alert(response.errorMessage);
     }
 
-    var updateAgent = function (agentid, agentname) {
-        request('updateAgent', ifFailsWarring, {agent: {id: agentid, name: agentname}});
+    $scope.updateAgent = function (agent) {
+        agent.name = agent.newname;
+        request('updateAgent', ifFailsWarring, {agent: JSON.stringify({id: agent.id, name: agent.name})});
     };
 
-    var updateSchedule = function (schedule) {
-        request('updateSchedule', ifFailsWarring, {schedule: schedule});
+    $scope.updateSchedule = function (schedule, drag) {
+    	var forSend = {};
+    	forSend.id = schedule.id;
+        if (!drag) {
+        	forSend.head = schedule.newhead;
+        	forSend.body = schedule.newbody;
+        	schedule.head = schedule.newhead;
+        	schedule.body = schedule.newbody;
+        	request('updateSchedule', ifFailsWarring, {schedule: JSON.stringify(forSend)});
+        	return;
+        }
+        forSend.agentId = schedule.agentId;
+        forSend.startTime = schedule.startTime.getString();
+        forSend.endTime = schedule.endTime.getString();
+        request('updateSchedule', ifFailsWarring, {schedule: JSON.stringify(forSend)});
     };
 
-    var updateLine = function (line) {
-        request('updateLine', ifFailsWarring, {line: line});
+    $scope.updateLine = function (line, drag) {
+    	var forSend = {};
+    	forSend.id = line.id;
+        if (!drag) {
+        	forSend.head = line.newhead;
+        	forSend.body = line.newbody;
+        	line.head = line.newhead;
+        	line.body = line.newbody;
+        	request('updateLine', ifFailsWarring, {line: JSON.stringify(forSend)});
+        	return;
+        }
+        forSend.agentId = line.agentId;
+        forSend.time = line.time.getString();
+        request('updateLine', ifFailsWarring, {line: JSON.stringify(forSend)});
     };
+    
+    var agentsParseDate = function(){
+    	for (var i = 0; i < $scope.agents.length; i++) {
+            for (var j = 0; j < $scope.agents[i].schedules.length; j++) {
+                $scope.agents[i].schedules[j].startTime = new Date($scope.agents[i].schedules[j].startTime);
+                $scope.agents[i].schedules[j].endTime = new Date($scope.agents[i].schedules[j].endTime);
+            }
+            for (var j = 0; j < $scope.agents[i].lines.length; j++) {
+            	$scope.agents[i].lines[j].time = new Date($scope.agents[i].lines[j].time);
+            }
+        }
+    }
 
     // 숨기기 기능
     $('body').click(function () {
         $scope.selectedBody.modify = false;
         $scope.selectedHead.modify = false;
 
-        var keys = Object.keys($scope.agents);
-
-        for (var i = 0; i < keys.length; i++) {
-            $scope.agents[keys[i]].modify = false;
-            for (var j = 0; j < $scope.agents[keys[i]].schedules.length; j++) {
-                $scope.agents[keys[i]].schedules[j].modify = false;
+        for (var i = 0; i < $scope.agents.length; i++) {
+            $scope.agents[i].modify = false;
+            for (var j = 0; j < $scope.agents[i].schedules.length; j++) {
+                $scope.agents[i].schedules[j].modify = false;
             }
-            for (var j = 0; j < $scope.agents[keys[i]].lines.length; j++) {
-                $scope.agents[keys[i]].lines[j].modify = false;
+            for (var j = 0; j < $scope.agents[i].lines.length; j++) {
+                $scope.agents[i].lines[j].modify = false;
             }
         }
         $scope.$apply();

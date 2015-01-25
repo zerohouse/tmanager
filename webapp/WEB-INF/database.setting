@@ -1,5 +1,5 @@
 {
-	"url" : "jdbc:mysql://tm.crb97qp69ve9.ap-northeast-1.rds.amazonaws.com:3306/sapyo?useUnicode=true&characterEncoding=utf8",
+	"url" : "jdbc:mysql://tmanager.crb97qp69ve9.ap-northeast-1.rds.amazonaws.com:3306/tmanager?useUnicode=true&characterEncoding=utf8",
 	"id" : "zerohouse",
 	"password" : "qkrtjdgh1"
 }

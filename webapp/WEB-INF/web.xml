@@ -12,7 +12,8 @@
 
 	<servlet-mapping>
 		<servlet-name>easymapping</servlet-name>
-		<url-pattern>*.tm</url-pattern>
+		<url-pattern>/api/*</url-pattern>
+		<url-pattern>/tm/*</url-pattern>
 	</servlet-mapping>
 
 	<welcome-file-list>

@@ -1,6 +1,6 @@
 {
 	"url" : "http://localhost:8080",
-	"controllerPath" : "sapyo.controller",
+	"controllerPath" : "tmanager.controllers",
 	"jspPath" : "/WEB-INF/jsp/",
 	"charEncoding" : "utf-8"
 }
