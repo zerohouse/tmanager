@@ -1,55 +1,18 @@
 app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $timeout, $http) {
 
+	var request = function (type, response, data) {
+		$scope.updating = true;
+	    clearTimeout(timer[type]);
+	    timer[type] = setTimeout(function () {
+	        $http(postRequest("/api" + url[type], data)).success(function (result) {
+	            response(result);
+	            $scope.updating = false;
+	        });
+	    }, 300);
+	};
+	
     $scope.pageAgent = {
         id: agentId
-    };
-
-    $scope.selectedHead = {};
-    $scope.selectedBody = {};
-
-    function postRequest(url, data) {
-        return {
-            method: 'POST',
-            url: url,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            transformRequest: function (obj) {
-                var str = [];
-                for (var p in obj)
-                    str.push(encodeURIComponent(p) + "="
-                    + encodeURIComponent(obj[p]));
-                return str.join("&");
-            },
-            data: data
-        }
-    }
-
-    var timer = {};
-    var url = {
-        refresh: "/agents/refresh",
-        newAgent: "/agents/new",
-        updateAgent: "/agents/update",
-        deleteAgent: "/agents/delete",
-        searchAgent: "/agents/search",
-        getAgentById: "/agents/addById",
-        newSchedule: "/schedule/new",
-        updateSchedule: "/schedule/update",
-        deleteSchedule: "/schedule/delete",
-        newLine: "/line/new",
-        updateLine: "/line/update",
-        deleteLine: "/line/delete"
-    };
-
-    var request = function (type, response, data) {
-    	$scope.updating = true;
-        clearTimeout(timer[type]);
-        timer[type] = setTimeout(function () {
-            $http(postRequest("/api" + url[type], data)).success(function (result) {
-                response(result);
-                $scope.updating = false;
-            });
-        }, 300);
     };
 
 
@@ -219,15 +182,17 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         unit.thirtyMin = blockHeight / unit.tdHeightTime * min * 30;
         return unit;
     }
-
-    //리플라이 제출
-    $scope.submitReply = function () {
-        if ($scope.selectedSchedule.replies == undefined)
-            $scope.selectedSchedule.replies = [];
-        $scope.selectedSchedule.replies.push($scope.newReply);
-        $scope.newReply = "";
+    
+    //스케줄 보이기
+    $scope.showSchedule = function (schedule) {
+        if (noClick) { //드래그시 이벤트 방지
+            noClick = false;
+            return;
+        }
+        $('#schedule').modal('show');
+        angular.element($('#schedule')).scope().setSelected(schedule);
     };
-    $scope.newReply = {};
+
 
     //스케줄 스타일 처리
     $scope.style = {};
@@ -429,45 +394,8 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         }, {keyword: $scope.keyword});
     }
     
-    //스케줄 or 라인 삭제 (선택된것)
-    $scope.deleteSelected = function () {
-        if (!confirm("스케줄이 삭제됩니다"))
-            return;
-        if ($scope.selectedSchedule.startTime == undefined) {
-            request('deleteLine', function (response) {
-                var keys = Object.keys($scope.agents);
-                for (var i = 0; i < keys.length; i++) {
-                    var index = $scope.agents[keys[i]].lines.indexOf($scope.selectedSchedule);
-                    if (index != -1) {
-                        $scope.agents[keys[i]].lines.splice(index, index + 1);
-                        return;
-                    }
-                }
-            }, {lineId: $scope.selectedSchedule.id});
-            return;
-        }
-        request('deleteSchedule', function (response) {
-            var keys = Object.keys($scope.agents);
-            for (var i = 0; i < keys.length; i++) {
-                var index = $scope.agents[keys[i]].schedules.indexOf($scope.selectedSchedule);
-                if (index != -1) {
-                    $scope.agents[keys[i]].schedules.splice(index, index + 1);
-                    return;
-                }
-            }
-        }, {scheduleId: $scope.selectedSchedule.id});
-    };
-
-
 
     //$scope.$watchGroup -> angular 버전이 낮아서 아직 지원 안함..ㅜ
-
-
-    var ifFailsWarring = function (response) {
-        if (response.success)
-            return;
-        alert(response.errorMessage);
-    }
 
     $scope.updateAgent = function (agent) {
         agent.name = agent.newname;
@@ -521,9 +449,6 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
 
     // 숨기기 기능
     $('body').click(function () {
-        $scope.selectedBody.modify = false;
-        $scope.selectedHead.modify = false;
-
         for (var i = 0; i < $scope.agents.length; i++) {
             $scope.agents[i].modify = false;
             for (var j = 0; j < $scope.agents[i].schedules.length; j++) {
@@ -536,18 +461,60 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         $scope.$apply();
     });
 
-    //스케줄 보이기
-    $scope.showSchedule = function (schedule) {
-        if (noClick) { //드래그시 이벤트 방지
-            noClick = false;
+    
+    //여기서부터 모달 부분
+    $scope.setSelected = function(selected){
+		$scope.selectedSchedule = selected;
+	}
+	
+	$scope.selectedHead = {};
+    $scope.selectedBody = {};
+    
+
+	//스케줄 or 라인 삭제 (선택된것)
+    $scope.deleteSelected = function () {
+        if (!confirm("스케줄이 삭제됩니다"))
+            return;
+        if ($scope.selectedSchedule.startTime == undefined) {
+            request('deleteLine', function (response) {
+                var keys = Object.keys($scope.agents);
+                for (var i = 0; i < keys.length; i++) {
+                    var index = $scope.agents[keys[i]].lines.indexOf($scope.selectedSchedule);
+                    if (index != -1) {
+                        $scope.agents[keys[i]].lines.splice(index, index + 1);
+                        return;
+                    }
+                }
+            }, {lineId: $scope.selectedSchedule.id});
             return;
         }
-        $('#schedule').modal('show');
-        $scope.selectedSchedule = schedule;
+        request('deleteSchedule', function (response) {
+            var keys = Object.keys($scope.agents);
+            for (var i = 0; i < keys.length; i++) {
+                var index = $scope.agents[keys[i]].schedules.indexOf($scope.selectedSchedule);
+                if (index != -1) {
+                    $scope.agents[keys[i]].schedules.splice(index, index + 1);
+                    return;
+                }
+            }
+        }, {scheduleId: $scope.selectedSchedule.id});
     };
-
+    
     // 텍스트 에어리어 자동 크기 조절
     $('textarea').autosize();
 
+    //리플라이 제출
+    $scope.submitReply = function () {
+        if ($scope.selectedSchedule.replies == undefined)
+            $scope.selectedSchedule.replies = [];
+        $scope.selectedSchedule.replies.push($scope.newReply);
+        $scope.newReply = "";
+    };
+    $scope.newReply = {};
+    
+    $('body').click(function () {
+        $scope.selectedBody.modify = false;
+        $scope.selectedHead.modify = false;
+    });
 
 }]);

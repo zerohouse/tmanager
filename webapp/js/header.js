@@ -14,6 +14,47 @@ Date.prototype.dayString = function () {
     return year + "-" + month + "-" + day;
 }
 
+function postRequest(url, data) {
+    return {
+        method: 'POST',
+        url: url,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        transformRequest: function (obj) {
+            var str = [];
+            for (var p in obj)
+                str.push(encodeURIComponent(p) + "="
+                + encodeURIComponent(obj[p]));
+            return str.join("&");
+        },
+        data: data
+    }
+}
+
+var ifFailsWarring = function (response) {
+    if (response.success)
+        return;
+    alert(response.errorMessage);
+}
+
+var timer = {};
+var url = {
+    refresh: "/agents/refresh",
+    newAgent: "/agents/new",
+    updateAgent: "/agents/update",
+    deleteAgent: "/agents/delete",
+    searchAgent: "/agents/search",
+    getAgentById: "/agents/addById",
+    newSchedule: "/schedule/new",
+    updateSchedule: "/schedule/update",
+    deleteSchedule: "/schedule/delete",
+    newLine: "/line/new",
+    updateLine: "/line/update",
+    deleteLine: "/line/delete"
+};
+
+
 var app = angular.module('tmanager', ['datePicker', 'ui.bootstrap']);
 
 app.directive('ngEnter', function () {
@@ -33,8 +74,8 @@ app.directive('ngEnter', function () {
 app.controller('headerController', ['$scope', function($scope){
     $scope.link = function(type){
     	var link = '/' + type + '/';
-    	var start = angular.element($('#schedule')).scope().start
-    	var end = angular.element($('#schedule')).scope().end
+    	var start = angular.element($('table')).scope().start;
+    	var end = angular.element($('table')).scope().end;
     	if(start == undefined){
     		document.location.href = link + agentId;
     		return;
@@ -46,3 +87,4 @@ app.controller('headerController', ['$scope', function($scope){
     	document.location.href = link + agentId + "/" + start.dayString() + "/" + end.dayString();
     }
 }]);
+
