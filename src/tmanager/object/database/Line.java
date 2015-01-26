@@ -11,7 +11,7 @@ public class Line {
 	
 	@Key
 	private Integer id;
-	private Integer agentId;
+	private String agentId;
 	@DateFormat("yyyy-MM-dd hh:mm")
 	private Date time;
 	private String head;
@@ -25,11 +25,12 @@ public class Line {
 		this.id = id;
 	}
 
-	public Integer getAgentId() {
+
+	public String getAgentId() {
 		return agentId;
 	}
 
-	public void setAgentId(Integer agentId) {
+	public void setAgentId(String agentId) {
 		this.agentId = agentId;
 	}
 

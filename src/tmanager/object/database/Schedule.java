@@ -11,7 +11,7 @@ public class Schedule {
 
 	@Key
 	private Integer id;
-	private Integer agentId;
+	private String agentId;
 	@DateFormat("yyyy-MM-dd hh:mm")
 	private Date startTime;
 	@DateFormat("yyyy-MM-dd hh:mm")
@@ -27,18 +27,18 @@ public class Schedule {
 		this.id = id;
 	}
 
-	public Integer getAgentId() {
+	public String getAgentId() {
 		return agentId;
+	}
+
+	public void setAgentId(String agentId) {
+		this.agentId = agentId;
 	}
 
 	@Override
 	public String toString() {
 		return "Schedule [id=" + id + ", agentId=" + agentId + ", startTime=" + startTime + ", endTime=" + endTime + ", head=" + head + ", body="
 				+ body + "]";
-	}
-
-	public void setAgentId(Integer agentId) {
-		this.agentId = agentId;
 	}
 
 	public Date getStartTime() {

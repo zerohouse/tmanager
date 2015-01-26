@@ -310,14 +310,54 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         this.lines = [];
     };
 
+    //검색
+    $scope.search = function(){
+    	possible = false;
+    	if($scope.keyword==""){
+    		$scope.searchResults = [];
+    		return;
+		}
+    	request('searchAgent', function (response) {
+        	if($scope.keyword==""){
+        		$scope.searchResults = [];
+        		return;
+    		}
+    		$scope.searchResults = response;
+    		if(response.length==0){
+    			possible = true;
+    			return;
+    		}
+    		for(var i=0; i< response.length;i++){
+    			if(response[i][0]==$scope.keyword)
+    				return;
+    		}
+    		possible = true;
+        }, {keyword: $scope.keyword});
+    }
+    
+    var possible = false;
+    $scope.newAgentPossible = function (){
+    	if(!possible)
+    		return false;
+    	if(!/^[A-Za-z][A-Za-z0-9]*$/.test($scope.keyword))
+    		return false;
+    	return true;
+    }
+    
     // 에이전트 추가
     $scope.newAgent = function () {
+    	if(!$scope.newAgentPossible())
+    		return;
         request('newAgent', function (response) {
-            var agent = new agentProto();
-            agent.id = response.id;
-            var size = $scope.agents.length;
-            $scope.agents.push(agent);
-        }, {agentId: $scope.pageAgent.id});
+        	if(response.errorMessage){
+        		alert(response.errorMessage)
+        		return;
+        	}
+        	response.schedules = [];
+        	response.lines = [];
+            $scope.agents.push(response);
+            possible = false;
+        }, {agentId: $scope.pageAgent.id, childId: $scope.keyword});
     };
     
     $scope.addById = function(id){
@@ -378,21 +418,6 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         }, {line: JSON.stringify(forSend)});
     };
 
-    
-    //검색
-    $scope.search = function(){
-    	if($scope.keyword==""){
-    		$scope.searchResults = [];
-    		return;
-		}
-    	request('searchAgent', function (response) {
-        	if($scope.keyword==""){
-        		$scope.searchResults = [];
-        		return;
-    		}
-    		$scope.searchResults = response;
-        }, {keyword: $scope.keyword});
-    }
     
 
     //$scope.$watchGroup -> angular 버전이 낮아서 아직 지원 안함..ㅜ

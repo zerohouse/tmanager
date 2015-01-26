@@ -1,6 +1,5 @@
 package tmanager.controllers;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -9,8 +8,6 @@ import tmanager.object.database.Agent;
 import tmanager.object.database.AgentRelation;
 import tmanager.object.support.Result;
 import easyjdbc.query.QueryExecuter;
-import easyjdbc.query.raw.ExecuteQuery;
-import easyjdbc.query.raw.GetRecordQuery;
 import easyjdbc.query.raw.GetRecordsQuery;
 import easymapping.annotation.Controller;
 import easymapping.annotation.Post;
@@ -24,18 +21,18 @@ public class AgentController {
 	@Post("/api/agents/new")
 	public Response newAgent(Http http) {
 		Agent agent = new Agent();
+		String childId = http.getParameter("childId");
+		agent.setId(childId);
 		QueryExecuter qe = new QueryExecuter();
-		ExecuteQuery query = new ExecuteQuery("insert into agent values ()");
-		GetRecordQuery primary = new GetRecordQuery(1, "SELECT LAST_INSERT_ID();");
-		qe.execute(query);
-		BigInteger child = (BigInteger) qe.execute(primary).get(0);
-		agent.setId(child.intValue());
+		int result = qe.insert(agent);
 		AgentRelation agentRelation = new AgentRelation();
-		int parentId = Integer.parseInt(http.getParameter("agentId"));
+		String parentId = http.getParameter("agentId");
 		agentRelation.setParent(parentId);
-		agentRelation.setChild(child.intValue());
-		qe.insert(agentRelation);
+		agentRelation.setChild(childId);
+		result += qe.insert(agentRelation);
 		qe.close();
+		if (result != 2)
+			return new Json(new Result(false, "DB 입력중 오류가 발생했습니다."));
 		return new Json(agent);
 	}
 
@@ -67,7 +64,7 @@ public class AgentController {
 		start.setTime(Long.parseLong(http.getParameter("start")));
 		Date end = new Date();
 		end.setTime(Long.parseLong(http.getParameter("end")));
-		int agentId = Integer.parseInt(http.getParameter("agentId"));
+		String agentId = http.getParameter("agentId");
 		QueryExecuter qe = new QueryExecuter();
 		List<AgentRelation> list = qe.getList(AgentRelation.class, "parent=?", agentId);
 		List<Agent> agentList = new ArrayList<Agent>();
@@ -94,8 +91,8 @@ public class AgentController {
 		Agent agent = qe.get(Agent.class, agentId);
 		agent.getSchedulesAndLines(qe, start, end);
 		AgentRelation relation = new AgentRelation();
-		relation.setParent(Integer.parseInt(parentId));
-		relation.setChild(Integer.parseInt(agentId));
+		relation.setParent(parentId);
+		relation.setChild(agentId);
 		qe.insert(relation);
 		qe.close();
 		return new Json(agent);

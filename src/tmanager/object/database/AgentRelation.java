@@ -8,23 +8,24 @@ import easyjdbc.query.QueryExecuter;
 public class AgentRelation {
 
 	@Key
-	private Integer parent;
+	private String parent;
 	@Key
-	private Integer child;
+	private String child;
+	
 
-	public Integer getParent() {
+	public String getParent() {
 		return parent;
 	}
 
-	public void setParent(Integer parent) {
+	public void setParent(String parent) {
 		this.parent = parent;
 	}
 
-	public Integer getChild() {
+	public String getChild() {
 		return child;
 	}
 
-	public void setChild(Integer child) {
+	public void setChild(String child) {
 		this.child = child;
 	}
 
@@ -35,4 +36,5 @@ public class AgentRelation {
 	public Agent getParentAgent(QueryExecuter qe) {
 		return qe.get(Agent.class, parent);
 	}
+
 }

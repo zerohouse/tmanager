@@ -34,16 +34,13 @@
                         새 스케줄러
                         <span class="caret"></span>
                     </span>
-                    <ul class="dropdown-menu">
-                        <li><a ng-click="newAgent()">추가하기 +</a></li>
-                        <li>
-                            <div class="input-group input-padding" ng-click="stop($event)">
-                            	<input class="form-control" ng-change="search()" ng-model="keyword" placeholder="ID, 이름으로 검색">
-			                    <ul class="list-group search">
-			                        <li ng-repeat="result in searchResults" class="list-group-item">{{result[1]}}(schedule ID: {{result[0]}}) <span class="pull-right hover pointer" ng-click="addById(result[0])">추가</span></li>
-			                    </ul>                            
-                            </div>
-                        </li>
+                    <ul class="dropdown-menu search-box">
+                       <li class="input-group input-padding" ng-click="stop($event)">
+                         	<input class="form-control" ng-change="search()" ng-model="keyword" placeholder="ID, 이름으로 검색">
+                       </li>
+                        <li ng-repeat="result in searchResults" class="list-group-item no-padding"><a ng-click="addById(result[0])">{{result[1]||"무제"}}(schedule ID: {{result[0]}}) 추가하기</a></li>
+                        <li ng-show="searchResults.length==0&&keyword!=''" class="list-group-item disabled">검색결과가 없습니다.</li>
+                        <li ng-show="newAgentPossible()" class="list-group-item no-padding"><a ng-click="newAgent()">이 아이디로 새로만들기</a></li>
                     </ul>
                 </span>
                 <span ng-click="expand()" class="glyphicon glyphicon-plus big-icon hover"></span>

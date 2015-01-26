@@ -16,7 +16,7 @@
     </div>
 </header>
 <script>
-	var agentId = JSON.parse('${pageAgent}');
+	var agentId = '${pageAgent}';
 	var dateStart = '${dateStart}';
 	var dateEnd = '${dateEnd}';
 </script>

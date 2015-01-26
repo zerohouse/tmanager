@@ -10,7 +10,7 @@ public class Reply {
 	@Key
 	private Integer id;
 	private Integer rid;
-	private Integer agentId;
+	private String agentId;
 	private Date writeTime;
 	private String reply;
 
@@ -30,11 +30,11 @@ public class Reply {
 		this.rid = rid;
 	}
 
-	public Integer getAgentId() {
+	public String getAgentId() {
 		return agentId;
 	}
 
-	public void setAgentId(Integer agentId) {
+	public void setAgentId(String agentId) {
 		this.agentId = agentId;
 	}
 

@@ -12,7 +12,7 @@ import easyjdbc.query.QueryExecuter;
 public class Agent {
 
 	@Key
-	private Integer id;
+	private String id;
 	private String name;
 
 	@Exclude
@@ -25,19 +25,20 @@ public class Agent {
 		lines = qe.getList(Line.class, "agentId=? and time between ? and ?", id, from, to);
 		List<AgentRelation> list = qe.getList(AgentRelation.class, "parent=?", id);
 		list.forEach(each -> {
-			List<Schedule> eachSchedules = qe.getList(Schedule.class, "agentId=? and startTime between ? and ? and endTime between ? and ?", each.getChild(), from, to, from, to);
+			List<Schedule> eachSchedules = qe.getList(Schedule.class, "agentId=? and startTime between ? and ? and endTime between ? and ?",
+					each.getChild(), from, to, from, to);
 			List<Line> eachLines = qe.getList(Line.class, "agentId=? and time between ? and ?", each.getChild(), from, to);
 			schedules.addAll(eachSchedules);
 			lines.addAll(eachLines);
 		});
-		
+
 	}
 
-	public Integer getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
