@@ -1,32 +1,5 @@
-Date.prototype.getString = function () {
-    var day = this.getDate();
-    var month = this.getMonth() + 1;
-    var year = this.getFullYear();
-    var hours = this.getHours();
-    var min = this.getMinutes();
-    return year + "-" + month + "-" + day + " "+hours+":"+min;
-}
-
-var app = angular.module('onemanager', ['datePicker', 'ui.bootstrap']);
-
-app.directive('ngEnter', function () {
-    return function (scope, element, attrs) {
-        element.bind("keydown keypress", function (event) {
-            if (event.which === 13) {
-                scope.$apply(function () {
-                    scope.$eval(attrs.ngEnter);
-                });
-
-                event.preventDefault();
-            }
-        });
-    };
-});
-
 app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $timeout, $http) {
 
-    var pageUrl = window.location.pathname.split("/");
-    var agentId = pageUrl[pageUrl.length - 1];
     $scope.pageAgent = {
         id: agentId
     };
@@ -58,6 +31,8 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         newAgent: "/agents/new",
         updateAgent: "/agents/update",
         deleteAgent: "/agents/delete",
+        searchAgent: "/agents/search",
+        getAgentById: "/agents/addById",
         newSchedule: "/schedule/new",
         updateSchedule: "/schedule/update",
         deleteSchedule: "/schedule/delete",
@@ -67,10 +42,12 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     };
 
     var request = function (type, response, data) {
+    	$scope.updating = true;
         clearTimeout(timer[type]);
         timer[type] = setTimeout(function () {
             $http(postRequest("/api" + url[type], data)).success(function (result) {
                 response(result);
+                $scope.updating = false;
             });
         }, 300);
     };
@@ -101,6 +78,11 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                 	$scope.updateSchedule(angular.element($(this)).scope().schedule, true);
                     if (ui.position.left == ui.originalPosition.left)
                         return;
+                    if(angular.element($(this)).scope().agent.id!=angular.element($(this)).scope().schedule.agentId){
+                    	$(this).css('left', ui.originalPosition.left);
+                    	alert("하위 그룹의 스케줄입니다. 옮길 수 없습니다.")
+                    	return;
+                    }
                     var diff = (ui.position.left - ui.originalPosition.left) / width;
                     var agentIndex = $scope.agents.indexOf(angular.element($(this)).scope().agent);
                     var scheduleIndex = $scope.agents[agentIndex].schedules.indexOf(angular.element($(this)).scope().schedule);
@@ -143,6 +125,11 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                 	$scope.updateLine(angular.element($(this)).scope().line, true);
                     if (ui.position.left == ui.originalPosition.left)
                         return;
+                    if(angular.element($(this)).scope().agent.id!=angular.element($(this)).scope().line.agentId){
+                    	$(this).css('left', ui.originalPosition.left);
+                    	alert("하위 그룹의 스케줄입니다. 옮길 수 없습니다.")
+                    	return;
+                    }
                     var diff = (ui.position.left - ui.originalPosition.left) / width;
                     var agentIndex = $scope.agents.indexOf(angular.element($(this)).scope().agent);
                     var lineIndex = $scope.agents[agentIndex].lines.indexOf(angular.element($(this)).scope().line);
@@ -279,8 +266,11 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     };
 
 
+
+
+    
     //업데이트
-    var refresh = function () {
+    var refresh = function (newVal) {
         var quantum = [];
         if ($scope.start == undefined) {
             return;
@@ -288,22 +278,38 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         if ($scope.end == undefined) {
             return;
         }
-        var start = new Date($scope.start.getTime());
-        var end = new Date($scope.end.getTime());
+        var start = new Date($scope.start);
+        var end = new Date($scope.end);
 
         while (start <= end) {
-            var each = new Date(start.getTime());
+            var each = new Date(start);
             quantum.push(each);
             start.setTime(start.getTime() + unit().tdHeightTime);
         }
         $scope.timeQuantums = quantum;
+        if(newVal<6){
+        	return;
+        }
+        $('html').addClass("loading");
         request('refresh', function (response) {
             $scope.agents = response;
             agentsParseDate();
             setDraggableAndResizable();
+            $('html').removeClass("loading");
         }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: $scope.pageAgent.id});
     };
 
+    // 워치 변수들
+    $scope.$watch('start', refresh);
+
+    $scope.$watch('end', refresh);
+
+    $scope.$watch('scale', refresh);
+    
+    if(dateStart.length>1)
+    	$scope.start = new Date(dateStart);
+    if(dateEnd.length>1)
+    	$scope.end = new Date(dateEnd);
 
     $scope.stop = function (event) {
         if (event == undefined)
@@ -348,11 +354,19 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
             $scope.agents.push(agent);
         }, {agentId: $scope.pageAgent.id});
     };
+    
+    $scope.addById = function(id){
+        request('getAgentById', function (response) {
+            $scope.agents.push(response);
+            agentsParseDate();
+            setDraggableAndResizable();
+        }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: id, parentId: $scope.pageAgent.id});
+    }
 
 
     //에이전트 삭제 (선택된것)
     $scope.deleteAgent = function (agent) {
-        if (!confirm("이 리스트와 리스트의 스케줄이 모두 삭제됩니다"))
+        if (!confirm("스케줄러가 삭제됩니다"))
             return;
         request('deleteAgent', function (response) {
             if (!response.success)
@@ -399,7 +413,22 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         }, {line: JSON.stringify(forSend)});
     };
 
-
+    
+    //검색
+    $scope.search = function(){
+    	if($scope.keyword==""){
+    		$scope.searchResults = [];
+    		return;
+		}
+    	request('searchAgent', function (response) {
+        	if($scope.keyword==""){
+        		$scope.searchResults = [];
+        		return;
+    		}
+    		$scope.searchResults = response;
+        }, {keyword: $scope.keyword});
+    }
+    
     //스케줄 or 라인 삭제 (선택된것)
     $scope.deleteSelected = function () {
         if (!confirm("스케줄이 삭제됩니다"))
@@ -430,12 +459,6 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     };
 
 
-    // 워치 변수들
-    $scope.$watch('start', refresh);
-
-    $scope.$watch('end', refresh);
-
-    $scope.$watch('scale', refresh);
 
     //$scope.$watchGroup -> angular 버전이 낮아서 아직 지원 안함..ㅜ
 

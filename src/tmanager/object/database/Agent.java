@@ -23,6 +23,14 @@ public class Agent {
 	public void getSchedulesAndLines(QueryExecuter qe, Date from, Date to) {
 		schedules = qe.getList(Schedule.class, "agentId=? and startTime between ? and ? and endTime between ? and ?", id, from, to, from, to);
 		lines = qe.getList(Line.class, "agentId=? and time between ? and ?", id, from, to);
+		List<AgentRelation> list = qe.getList(AgentRelation.class, "parent=?", id);
+		list.forEach(each -> {
+			List<Schedule> eachSchedules = qe.getList(Schedule.class, "agentId=? and startTime between ? and ? and endTime between ? and ?", each.getChild(), from, to, from, to);
+			List<Line> eachLines = qe.getList(Line.class, "agentId=? and time between ? and ?", each.getChild(), from, to);
+			schedules.addAll(eachSchedules);
+			lines.addAll(eachLines);
+		});
+		
 	}
 
 	public Integer getId() {

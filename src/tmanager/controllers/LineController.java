@@ -21,6 +21,7 @@ public class LineController {
 		qe.close();
 		return new Json(line);
 	}
+	
 	@Post("/api/line/update")
 	public Response update(Http http) {
 		Line line = http.getJsonObject(Line.class, "line");
@@ -28,6 +29,18 @@ public class LineController {
 		int result = qe.update(line);
 		qe.close();
 		if (result == 0)
+			return new Json(new Result(false, "DB 입력중 오류가 발생했습니다."));
+		return new Json(new Result(true, null));
+	}
+	
+	@Post("/api/line/delete")
+	public Response delete(Http http) {
+		QueryExecuter qe = new QueryExecuter();
+		Line line = new Line();
+		line.setId(Integer.parseInt(http.getParameter("lineId")));
+		int result = qe.delete(line);
+		qe.close();
+		if (result==0)
 			return new Json(new Result(false, "DB 입력중 오류가 발생했습니다."));
 		return new Json(new Result(true, null));
 	}

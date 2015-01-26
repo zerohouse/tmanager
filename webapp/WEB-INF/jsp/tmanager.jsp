@@ -7,28 +7,15 @@
     <link href="/css/timeline.css" rel="stylesheet" media="screen">
     <title>T 매니저 - Timeline</title>
 </head>
-<body ng-app="onemanager">
-<header class="navbar navbar-default navbar-fixed-top bs-docs-nav" role="banner">
-    <div class="container">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="#">T Manager</a>
-        </div>
-        <div class="navbar-collapse collapse">
-
-            <ul class="nav navbar-nav">
-                <li><a href="#">Timeline</a></li>
-            </ul>
-
-        </div>
-    </div>
-</header>
+<body ng-app="tmanager">
+<%@ include file="/WEB-INF/fragment/header.jsp"%>
 <br><br><br><br>
 
 <div class="container" ng-controller="timetable">
     <div class="row">
         <div class="col-md-4">
             <div class="dropdown">
-                <h4 class="dropdown-toggle pointer">
+                <h4 class="dropdown-toggle pointer hover">
                     {{(start|date:"yyyy년 M월 d일 ~")||"기간을 "}} {{(end|date:"yyyy년 M월 d일")||"선택해 주세요!"}} <span class="caret" ng-show="!timeQuantums"></span>
                 </h4>
 
@@ -37,11 +24,12 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-offset-4 col-md-4">
+        <div ng-show="timeQuantums.length>0" class="col-md-offset-4 col-md-4">
 
             <div class="pull-right">
                 <span class="dropdown">
-                    <span class="btn btn-primary dropdown-toggle" type="button"
+                	<span ng-show="updateing" class="glyphicon glyphicon-refresh big-icon rotating"></span>
+                    <span class="dropdown-toggle big-icon hover" type="button"
                             data-toggle="dropdown" aria-expanded="true">
                         새 스케줄러
                         <span class="caret"></span>
@@ -49,19 +37,23 @@
                     <ul class="dropdown-menu">
                         <li><a ng-click="newAgent()">추가하기 +</a></li>
                         <li>
-                            <div class="input-group input-padding" ng-click="stop($event)"><input class="form-control"
-                                                                                                  placeholder="ID, 이름으로 검색">
+                            <div class="input-group input-padding" ng-click="stop($event)">
+                            	<input class="form-control" ng-change="search()" ng-model="keyword" placeholder="ID, 이름으로 검색">
+			                    <ul class="list-group search">
+			                        <li ng-repeat="result in searchResults" class="list-group-item">{{result[1]}}(schedule ID: {{result[0]}}) <span class="pull-right hover pointer" ng-click="addById(result[0])">추가</span></li>
+			                    </ul>                            
                             </div>
                         </li>
                     </ul>
                 </span>
-                <span ng-click="expand()" class="btn btn-success fa fa-plus-square big-icon"></span>
-                <span ng-click="reduce()" class="btn btn-success fa fa-minus-square big-icon"></span>
+                <span ng-click="expand()" class="glyphicon glyphicon-plus big-icon hover"></span>
+                <span ng-click="reduce()" class="glyphicon glyphicon-minus big-icon hover"></span>
+               
             </div>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row"  ng-show="timeQuantums.length>0">
         <div class="col-md-12">
             <!-- 테이블 -->
             <table id="table" class="table none-select cursor" ng-mousedown="mousedown($event)">

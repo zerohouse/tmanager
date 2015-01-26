@@ -11,6 +11,7 @@ import tmanager.object.support.Result;
 import easyjdbc.query.QueryExecuter;
 import easyjdbc.query.raw.ExecuteQuery;
 import easyjdbc.query.raw.GetRecordQuery;
+import easyjdbc.query.raw.GetRecordsQuery;
 import easymapping.annotation.Controller;
 import easymapping.annotation.Post;
 import easymapping.mapping.Http;
@@ -79,5 +80,34 @@ public class AgentController {
 		}
 		qe.close();
 		return new Json(agentList);
+	}
+	
+	@Post("/api/agents/addById")
+	public Response addById(Http http) {
+		Date start = new Date();
+		start.setTime(Long.parseLong(http.getParameter("start")));
+		Date end = new Date();
+		end.setTime(Long.parseLong(http.getParameter("end")));
+		String parentId = http.getParameter("parentId");
+		String agentId = http.getParameter("agentId");
+		QueryExecuter qe = new QueryExecuter();
+		Agent agent = qe.get(Agent.class, agentId);
+		agent.getSchedulesAndLines(qe, start, end);
+		AgentRelation relation = new AgentRelation();
+		relation.setParent(Integer.parseInt(parentId));
+		relation.setChild(Integer.parseInt(agentId));
+		qe.insert(relation);
+		qe.close();
+		return new Json(agent);
+	}
+
+	@Post("/api/agents/search")
+	public Response search(Http http) {
+		String keyword = http.getParameter("keyword");
+		GetRecordsQuery query = new GetRecordsQuery(2, "select * from agent where name like '%" + keyword + "%' or id like'%" + keyword + "%'");
+		QueryExecuter qe = new QueryExecuter();
+		List<List<Object>> result = qe.execute(query);
+		qe.close();
+		return new Json(result);
 	}
 }

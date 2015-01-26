@@ -11,3 +11,4 @@
 <script src="/plugin/angular/datepicker/scripts/datePickerUtils.js"></script>
 <script src="/plugin/angular/datepicker/scripts/dateRange.js"></script>
 <script src="/plugin/angular/datepicker/scripts/input.js"></script>
+<script src="/js/header.js"></script>

@@ -32,4 +32,16 @@ public class ScheduleController {
 			return new Json(new Result(false, "DB 입력중 오류가 발생했습니다."));
 		return new Json(new Result(true, null));
 	}
+	
+	@Post("/api/schedule/delete")
+	public Response delete(Http http) {
+		QueryExecuter qe = new QueryExecuter();
+		Schedule schedule = new Schedule();
+		schedule.setId(Integer.parseInt(http.getParameter("scheduleId")));
+		int result = qe.delete(schedule);
+		qe.close();
+		if (result==0)
+			return new Json(new Result(false, "DB 입력중 오류가 발생했습니다."));
+		return new Json(new Result(true, null));
+	}
 }

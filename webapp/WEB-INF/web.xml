@@ -13,7 +13,8 @@
 	<servlet-mapping>
 		<servlet-name>easymapping</servlet-name>
 		<url-pattern>/api/*</url-pattern>
-		<url-pattern>/tm/*</url-pattern>
+		<url-pattern>/tmanager/*</url-pattern>
+		<url-pattern>/calendar/*</url-pattern>
 	</servlet-mapping>
 
 	<welcome-file-list>
