@@ -80,25 +80,29 @@ app.controller('headerController', ['$scope', function($scope){
     	var start = angular.element($('table')).scope().start;
     	var end = angular.element($('table')).scope().end;
     	if(start == undefined){
-    		document.location.href = link + agentId;
+    		document.location.href = link + setting.agentId;
     		return;
     	}
     	if(end == undefined){
-    		document.location.href = link + agentId;
+    		document.location.href = link + setting.agentId;
     		return;
     	}
-    	document.location.href = link + agentId + "/" + start.dayString() + "/" + end.dayString();
+    	document.location.href = link + setting.agentId + "/" + start.dayString() + "/" + end.dayString();
     }
 }]);
 
 app.controller('loginController', ['$scope', '$http', function($scope, $http){
-	$scope.logged = logged;
+	$scope.logged = setting.logged;
 	
 	
 	var regexTest = function(){
 		var regex = /^([a-zA-Z0-9_-]){4,25}$/;
-		if(!regex.test($scope.user.id)&&regex.test($scope.user.password)){
-			$scope.errorMessage = "아이디와 패스워드는 4~25자의 영문자와 숫자입니다.";
+		if(!regex.test($scope.user.id)){
+			$scope.errorMessage = "아이디는 4~25자의 영문자와 숫자입니다.";
+			return false;
+		}
+		if(!regex.test($scope.user.password)){
+			$scope.errorMessage = "패스워드는 4~25자의 영문자와 숫자입니다.";
 			return false;
 		}
 		return true;
@@ -110,6 +114,7 @@ app.controller('loginController', ['$scope', '$http', function($scope, $http){
 	    request('login', function (response) {
 	    	if(response.success){
 	    		$scope.logged = true;
+	    		setting.agentId = response.errorMessage;
 	    		return;
 	    	}
 	    	$scope.errorMessage = response.errorMessage;
@@ -121,6 +126,7 @@ app.controller('loginController', ['$scope', '$http', function($scope, $http){
 	    request('logout', function (response) {
 	    	if(response.success){
 	    		$scope.logged = false;
+	    		setting.agentId = '';
 	    		return;
 	    	}
 	    	$scope.errorMessage = response.errorMessage;

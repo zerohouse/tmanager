@@ -23,7 +23,7 @@ public class UserController {
 		if (!rightUser)
 			return new Json(new Result(false, "패스워드가 다릅니다."));
 		http.setSessionAttribute("user", user);
-		return new Json(new Result(true, null));
+		return new Json(new Result(true, user.getId()));
 	}
 
 	@Post("/api/users/register")

@@ -13,9 +13,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
 	    }, 300);
 	};
 	
-    $scope.pageAgent = {
-        id: agentId
-    };
+    $scope.setting = setting;
     
 
     //스케줄 보이기
@@ -109,7 +107,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
             agentsParseDate();
             scheduleIntoDays();
             $('html').removeClass("loading");
-        }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: $scope.pageAgent.id});
+        }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: $scope.setting.agentId});
     };
    
     var agentsParseDate = function(){
@@ -145,10 +143,10 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
 
     $scope.$watch('end', refresh);
     
-    if(dateStart.length>1)
-    	$scope.start = new Date(dateStart);
-    if(dateEnd.length>1)
-    	$scope.end = new Date(dateEnd);
+    if(setting.dateStart.length>1)
+    	$scope.start = new Date(setting.dateStart);
+    if(setting.dateEnd.length>1)
+    	$scope.end = new Date(setting.dateEnd);
     
     $scope.stop = function (event) {
         if (event == undefined)

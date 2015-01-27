@@ -6,6 +6,11 @@ import easyjdbc.query.QueryExecuter;
 
 @Table("user")
 public class User {
+	@Override
+	public String toString() {
+		return "User [id=" + id + ", password=" + password + "]";
+	}
+
 	public String getId() {
 		return id;
 	}

@@ -34,13 +34,14 @@
     </div>
 </header>
 <script>
-	var agentId = '${pageAgent}';
-	var dateStart = '${dateStart}';
-	var dateEnd = '${dateEnd}';
-	var logged = false;
+	var setting = {};
+	setting.agentId = '${pageAgent}';
+	setting.dateStart = '${dateStart}';
+	setting.dateEnd = '${dateEnd}';
+	setting.logged = false;
 </script>
 <c:if test="${not empty sessionScope.user}">
 	<script>
-		logged = true;
+	setting.logged = true;
 	</script>
 </c:if>

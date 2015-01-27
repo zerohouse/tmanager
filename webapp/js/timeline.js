@@ -10,9 +10,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
 	        });
 	    }, 300);
 	};
-    $scope.pageAgent = {
-        id: agentId
-    };
+    $scope.setting = setting;
 
     // 드래그 / 리사이즈 세팅
     var setDraggableAndResizable = function () {
@@ -238,11 +236,11 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         if ($scope.start == undefined) {
             return;
         }
-        if ($scope.end == undefined) {
+        if ($scope.start == undefined) {
             return;
         }
         var start = new Date($scope.start);
-        var end = new Date($scope.end);
+        var end = new Date($scope.start);
 
         while (start <= end) {
             var each = new Date(start);
@@ -259,7 +257,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
             agentsParseDate();
             setDraggableAndResizable();
             $('html').removeClass("loading");
-        }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: $scope.pageAgent.id});
+        }, {start: $scope.start.getTime(), end: $scope.start.getTime(), agentId: $scope.setting.agentId});
     };
 
     // 워치 변수들
@@ -269,10 +267,10 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
 
     $scope.$watch('scale', refresh);
     
-    if(dateStart.length>1)
-    	$scope.start = new Date(dateStart);
-    if(dateEnd.length>1)
-    	$scope.end = new Date(dateEnd);
+    if(setting.dateStart.length>1)
+    	$scope.start = new Date(setting.dateStart);
+    if(setting.dateEnd.length>1)
+    	$scope.start = new Date(setting.dateEnd);
 
     $scope.stop = function (event) {
         if (event == undefined)
@@ -355,7 +353,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         	response.lines = [];
             $scope.agents.push(response);
             possible = false;
-        }, {agentId: $scope.pageAgent.id, childId: $scope.keyword});
+        }, {agentId: $scope.setting.agentId, childId: $scope.keyword});
     };
     
     $scope.addById = function(id){
@@ -363,7 +361,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
             $scope.agents.push(response);
             agentsParseDate();
             setDraggableAndResizable();
-        }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: id, parentId: $scope.pageAgent.id});
+        }, {start: $scope.start.getTime(), end: $scope.start.getTime(), agentId: id, parentId: $scope.setting.agentId});
     }
 
 
@@ -376,7 +374,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                 return;
             var index = $scope.agents.indexOf(agent);
             $scope.agents.splice(index, index + 1);
-        }, {agentRelation: JSON.stringify({parent: $scope.pageAgent.id, child: agent.id})});
+        }, {agentRelation: JSON.stringify({parent: $scope.setting.agentId, child: agent.id})});
     };
 
 
