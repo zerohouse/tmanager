@@ -14,24 +14,25 @@ public class Agent {
 	@Key
 	private String id;
 	private String name;
-
+	private Integer openType;
+	
+	@Exclude
+	public final static Integer TYPE_PRIVATE = 0;
+	@Exclude
+	public final static Integer TYPE_PUBIC = 1;
+	@Exclude
+	public final static Integer TYPE_PUBLIC_ALL = 2;
+	
+	
 	@Exclude
 	private List<Schedule> schedules;
 	@Exclude
 	private List<Line> lines;
 
-	public void getSchedulesAndLines(QueryExecuter qe, Date from, Date to) {
-		schedules = qe.getList(Schedule.class, "agentId=? and startTime between ? and ? and endTime between ? and ?", id, from, to, from, to);
-		lines = qe.getList(Line.class, "agentId=? and time between ? and ?", id, from, to);
-		List<AgentRelation> list = qe.getList(AgentRelation.class, "parent=?", id);
-		list.forEach(each -> {
-			List<Schedule> eachSchedules = qe.getList(Schedule.class, "agentId=? and startTime between ? and ? and endTime between ? and ?",
-					each.getChild(), from, to, from, to);
-			List<Line> eachLines = qe.getList(Line.class, "agentId=? and time between ? and ?", each.getChild(), from, to);
-			schedules.addAll(eachSchedules);
-			lines.addAll(eachLines);
-		});
-
+	public void getSchedulesAndLines(QueryExecuter qe, Date from, Date to, int level) {
+		SchedulesAndLines ar = new SchedulesAndLines(qe, from, to, id, level);
+		this.schedules = ar.getSchedules();
+		this.lines = ar.getLines();
 	}
 
 	public String getId() {
@@ -48,6 +49,14 @@ public class Agent {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Integer getOpenType() {
+		return openType;
+	}
+
+	public void setOpenType(Integer openType) {
+		this.openType = openType;
 	}
 
 }

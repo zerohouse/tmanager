@@ -1,0 +1,1 @@
+insert into user values('zerohouse', '1234');

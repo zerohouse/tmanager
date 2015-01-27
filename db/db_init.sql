@@ -1,7 +1,15 @@
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user` (
+	`id` VARCHAR(255) NOT NULL,
+	`password` VARCHAR(64) NOT NULL DEFAULT '',
+	PRIMARY KEY(`id`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;
+
 DROP TABLE IF EXISTS `agent`;
 CREATE TABLE `agent` (
 	`id` VARCHAR(255) NOT NULL,
 	`name` VARCHAR(64) NOT NULL DEFAULT '',
+	`openType` TINYINT NOT NULL DEFAULT 0,
 	PRIMARY KEY(`id`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;
 
@@ -12,7 +20,6 @@ CREATE TABLE `agent_relation` (
 	PRIMARY KEY(`parent`, `child`),
 	index(`child`), index(`parent`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET utf8;
-
 
 DROP TABLE IF EXISTS `schedule`;
 CREATE TABLE `schedule` (

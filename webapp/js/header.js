@@ -51,7 +51,10 @@ var url = {
     deleteSchedule: "/schedule/delete",
     newLine: "/line/new",
     updateLine: "/line/update",
-    deleteLine: "/line/delete"
+    deleteLine: "/line/delete",
+    login:"/users/login",
+    logout:"/users/logout",
+    register:"/users/register"
 };
 
 
@@ -86,5 +89,63 @@ app.controller('headerController', ['$scope', function($scope){
     	}
     	document.location.href = link + agentId + "/" + start.dayString() + "/" + end.dayString();
     }
+}]);
+
+app.controller('loginController', ['$scope', '$http', function($scope, $http){
+	$scope.logged = logged;
+	
+	
+	var regexTest = function(){
+		var regex = /^([a-zA-Z0-9_-]){4,25}$/;
+		if(!regex.test($scope.user.id)&&regex.test($scope.user.password)){
+			$scope.errorMessage = "아이디와 패스워드는 4~25자의 영문자와 숫자입니다.";
+			return false;
+		}
+		return true;
+	}
+	
+	$scope.submit = function(){
+		if(!regexTest())
+			return;
+	    request('login', function (response) {
+	    	if(response.success){
+	    		$scope.logged = true;
+	    		return;
+	    	}
+	    	$scope.errorMessage = response.errorMessage;
+	    }, {user:JSON.stringify($scope.user)});
+	}
+	
+	
+	$scope.logout = function(){
+	    request('logout', function (response) {
+	    	if(response.success){
+	    		$scope.logged = false;
+	    		return;
+	    	}
+	    	$scope.errorMessage = response.errorMessage;
+	    });
+	}
+	
+	$scope.register = function(){
+		if(!regexTest())
+			return;
+	    request('register', function (response) {
+	    	if(response.success){
+	    		$scope.logged = true;
+	    		return;
+	    	}
+	    	$scope.errorMessage = response.errorMessage;
+	    }, {user:JSON.stringify($scope.user)});
+	}
+
+	var request = function (type, response, data) {
+	    clearTimeout(timer[type]);
+	    timer[type] = setTimeout(function () {
+	        $http(postRequest("/api" + url[type], data)).success(function (result) {
+	            response(result);
+	        });
+	    }, 300);
+	};
 }]);
 

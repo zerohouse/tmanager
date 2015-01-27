@@ -1,1 +1,2 @@
 mysql -h tmanager.crb97qp69ve9.ap-northeast-1.rds.amazonaws.com -u zerohouse -p tmanager < db_init.sql
+mysql -h tmanager.crb97qp69ve9.ap-northeast-1.rds.amazonaws.com -u zerohouse -p tmanager < db_testData.sql

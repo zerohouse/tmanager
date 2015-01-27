@@ -10,11 +10,9 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
 	        });
 	    }, 300);
 	};
-	
     $scope.pageAgent = {
         id: agentId
     };
-
 
     // 드래그 / 리사이즈 세팅
     var setDraggableAndResizable = function () {

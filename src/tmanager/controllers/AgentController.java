@@ -68,17 +68,20 @@ public class AgentController {
 		QueryExecuter qe = new QueryExecuter();
 		List<AgentRelation> list = qe.getList(AgentRelation.class, "parent=?", agentId);
 		List<Agent> agentList = new ArrayList<Agent>();
-		for (int i = 0; i < list.size(); i++) {
-			Agent agent = list.get(i).getChildAgent(qe);
-			if (agent == null)
-				continue;
-			agent.getSchedulesAndLines(qe, start, end);
-			agentList.add(agent);
-		}
+		Agent parent = qe.get(Agent.class, agentId);
+		if (parent != null)
+			agentList.add(parent);
+		list.forEach(each -> {
+			Agent agent = each.getChildAgent(qe);
+			if (agent != null) {
+				agent.getSchedulesAndLines(qe, start, end, 4);
+				agentList.add(agent);
+			}
+		});
 		qe.close();
 		return new Json(agentList);
 	}
-	
+
 	@Post("/api/agents/addById")
 	public Response addById(Http http) {
 		Date start = new Date();
@@ -89,7 +92,7 @@ public class AgentController {
 		String agentId = http.getParameter("agentId");
 		QueryExecuter qe = new QueryExecuter();
 		Agent agent = qe.get(Agent.class, agentId);
-		agent.getSchedulesAndLines(qe, start, end);
+		agent.getSchedulesAndLines(qe, start, end, 4); // 레벨은 리커션 딥서치레벨
 		AgentRelation relation = new AgentRelation();
 		relation.setParent(parentId);
 		relation.setChild(agentId);
