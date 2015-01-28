@@ -158,7 +158,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     $scope.$watch('end', refresh);
     
     $scope.start= new Date();
-    $scope.end = new Date($scope.start.getTime() + 60*60*1000*24*7);
+    $scope.end = new Date($scope.start.getTime() + 60*60*1000*24*30);
    
     if(setting.dateStart.length>1)
     	$scope.start = new Date(setting.dateStart);

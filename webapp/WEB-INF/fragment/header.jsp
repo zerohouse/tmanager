@@ -4,7 +4,7 @@
 <header class="navbar navbar-default navbar-fixed-top bs-docs-nav" role="banner" ng-controller="headerController">
     <div class="container">
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">T Manager</a>
+            <a class="navbar-brand" href="/tmanager/">T Manager</a>
         </div>
         <div class="navbar-collapse collapse">
 
@@ -43,5 +43,6 @@
 <c:if test="${not empty sessionScope.user}">
 	<script>
 	setting.logged = true;
+	setting.loggedUser = '${sessionScope.user.id}';
 	</script>
 </c:if>

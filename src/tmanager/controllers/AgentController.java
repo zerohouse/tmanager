@@ -21,13 +21,16 @@ public class AgentController {
 
 	@Post("/api/agents/new")
 	public Response newAgent(Http http) {
+		User user = http.getSessionAttribute(User.class, "user");
+		if(user==null)
+			return new Json(new Result(false, "로그인 해 주세요."));
 		String childId = http.getParameter("childId");
 		String parentId = http.getParameter("agentId");
 		if (childId.equals(parentId))
 			return new Json(new Result(false, "하위 스케줄러에 자신을 추가할 수 없습니다."));
 		Agent agent = new Agent();
 		agent.setId(childId);
-		agent.setOwnerId(parentId);
+		agent.setOwnerId(user.getId());
 		QueryExecuter qe = new QueryExecuter();
 		int result = qe.insert(agent);
 		AgentRelation agentRelation = new AgentRelation();
@@ -118,7 +121,7 @@ public class AgentController {
 	@Post("/api/agents/search")
 	public Response search(Http http) {
 		String keyword = http.getParameter("keyword");
-		GetRecordsQuery query = new GetRecordsQuery(2, "select * from agent where openType!=0 and (name like '%" + keyword + "%' or id like'%" + keyword + "%')");
+		GetRecordsQuery query = new GetRecordsQuery(2, "select id, name from agent where openType!=0 and (name like '%" + keyword + "%' or id like'%" + keyword + "%')");
 		QueryExecuter qe = new QueryExecuter();
 		List<List<Object>> result = qe.execute(query);
 		qe.close();

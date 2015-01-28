@@ -23,7 +23,6 @@ public class SchedulesAndLines {
 	public SchedulesAndLines(QueryExecuter qe, Date from, Date to, String id, int level) {
 		schedules = qe.getList(Schedule.class, "agentId=? and startTime between ? and ? and endTime between ? and ?", id, from, to, from, to);
 		lines = qe.getList(Line.class, "agentId=? and time between ? and ?", id, from, to);
-		used.add(id);
 		this.qe = qe;
 		this.from = from;
 		this.to = to;
@@ -40,6 +39,9 @@ public class SchedulesAndLines {
 		if(used.contains(id))
 			return;
 		used.add(id);
+		if (levelCount >= level)
+			return;
+		levelCount++;
 		List<AgentRelation> list = qe.getList(AgentRelation.class, "parent=?", id);
 		list.forEach(each -> {
 			List<Schedule> eachSchedules = qe.getList(Schedule.class, "agentId=? and startTime between ? and ? and endTime between ? and ?",
@@ -47,9 +49,7 @@ public class SchedulesAndLines {
 			List<Line> eachLines = qe.getList(Line.class, "agentId=? and time between ? and ?", each.getChild(), from, to);
 			schedules.addAll(eachSchedules); // 스케줄스에 찾은거 모두 넣음
 			lines.addAll(eachLines); // 스케줄스에 찾은거 모두 넣음
-			levelCount++;
-			if (levelCount < level)
-				doRun(each.getChild());
+			doRun(each.getChild());
 		});
 	}
 	

@@ -30,6 +30,12 @@ public class Agent {
 	@Exclude
 	private List<Line> lines;
 	
+	@Override
+	public String toString() {
+		return "Agent [id=" + id + ", ownerId=" + ownerId + ", name=" + name + ", openType=" + openType + ", schedules=" + schedules + ", lines="
+				+ lines + "]";
+	}
+
 	public String getOwnerId() {
 		return ownerId;
 	}
