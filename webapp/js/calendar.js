@@ -109,6 +109,8 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
             $('html').removeClass("loading");
         }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: $scope.setting.agentId});
     };
+    
+    $scope.refresh = refresh;
    
     var agentsParseDate = function(){
     	for (var i = 0; i < $scope.agents.length; i++) {
@@ -234,6 +236,39 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         $scope.$apply();
     });
     
+    // 스케줄 각자의 링크로 연결
+    $scope.toChildLink = function(agent){
+    	if(agent==undefined)
+    		return;
+    	var link = '/calendar/';
+    	var start = $scope.start;
+    	var end = $scope.end;
+    	if(start == undefined){
+    		document.location.href = link + agent.id;
+    		return;
+    	}
+    	if(end == undefined){
+    		document.location.href = link + agent.id;
+    		return;
+    	}
+    	document.location.href = link + agent.id + "/" + start.dayString() + "/" + end.dayString();
+    }
+    
+    $scope.link = function(agent){
+    	if(agent==undefined)
+    		return;
+    	var link = document.location.origin + '/calendar/';
+    	var start = $scope.start;
+    	var end = $scope.end;
+    	if(start == undefined){
+    		return link + agent.id;
+    	}
+    	if(end == undefined){
+    		return link + agent.id;
+    	}
+    	return link + agent.id + "/" + start.dayString() + "/" + end.dayString();
+    }
+
     
     //여기서부터 모달 부분
     $scope.setSelected = function(selected){

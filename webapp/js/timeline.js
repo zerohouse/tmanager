@@ -270,6 +270,8 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         	  return !isNaN(d.getTime());
         	}
     };
+    
+    $scope.refresh = refresh;
 
     // 워치 변수들
     $scope.$watch('start', refresh);
@@ -514,6 +516,8 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     
     // 스케줄 각자의 링크로 연결
     $scope.toChildLink = function(agent){
+    	if(agent==undefined)
+    		return;
     	var link = '/tmanager/';
     	var start = $scope.start;
     	var end = $scope.end;
@@ -526,6 +530,21 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     		return;
     	}
     	document.location.href = link + agent.id + "/" + start.dayString() + "/" + end.dayString();
+    }
+    
+    $scope.link = function(agent){
+    	if(agent==undefined)
+    		return;
+    	var link = document.location.origin + '/tmanager/';
+    	var start = $scope.start;
+    	var end = $scope.end;
+    	if(start == undefined){
+    		return link + agent.id;
+    	}
+    	if(end == undefined){
+    		return link + agent.id;
+    	}
+    	return link + agent.id + "/" + start.dayString() + "/" + end.dayString();
     }
 
     

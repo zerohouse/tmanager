@@ -50,12 +50,11 @@ html.loading:after {
 	box-shadow: 1px 1px 1px silver;
 }
 
-@
--webkit-keyframes rotating {from { -webkit-transform:rotate(0deg);
-	
-}
-
-to {
-	-webkit-transform: rotate(360deg);
-}
+@-webkit-keyframes rotating {
+    from{
+        -webkit-transform: rotate(0deg);
+    }
+    to{
+        -webkit-transform: rotate(360deg);
+    }
 }

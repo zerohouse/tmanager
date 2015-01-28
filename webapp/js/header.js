@@ -77,8 +77,8 @@ app.directive('ngEnter', function () {
 app.controller('headerController', ['$scope', function($scope){
     $scope.link = function(type){
     	var link = '/' + type + '/';
-    	var start = angular.element($('table')).scope().start;
-    	var end = angular.element($('table')).scope().end;
+    	var start = angular.element($('.table')).scope().start;
+    	var end = angular.element($('.table')).scope().end;
     	if(start == undefined){
     		document.location.href = link + setting.agentId;
     		return;
@@ -115,6 +115,7 @@ app.controller('loginController', ['$scope', '$http', function($scope, $http){
 	    	if(response.success){
 	    		$scope.logged = true;
 	    		setting.agentId = response.errorMessage;
+	    		angular.element($('.table')).scope().refresh();
 	    		return;
 	    	}
 	    	$scope.errorMessage = response.errorMessage;
@@ -127,6 +128,7 @@ app.controller('loginController', ['$scope', '$http', function($scope, $http){
 	    	if(response.success){
 	    		$scope.logged = false;
 	    		setting.agentId = '';
+	    		angular.element($('.table')).scope().refresh();
 	    		return;
 	    	}
 	    	$scope.errorMessage = response.errorMessage;
@@ -140,6 +142,7 @@ app.controller('loginController', ['$scope', '$http', function($scope, $http){
 	    	if(response.success){
 	    		$scope.logged = true;
 	    		setting.agentId = response.errorMessage;
+	    		angular.element($('.table')).scope().refresh();
 	    		return;
 	    	}
 	    	$scope.errorMessage = response.errorMessage;

@@ -13,6 +13,7 @@
 
 <div class="container" ng-controller="timetable">
 	<h1>{{agents[0].name||"무제"}}<small>({{agents[0].id}})</small></h1>
+	<h5 ng-click="toChildLink(agents[0])" class='pointer'>{{link(agents[0])}}</h5>
     <div class="row">
         <div class="col-md-4">
             <div class="dropdown">
