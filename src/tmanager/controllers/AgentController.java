@@ -6,6 +6,7 @@ import java.util.List;
 
 import tmanager.object.database.Agent;
 import tmanager.object.database.AgentRelation;
+import tmanager.object.database.User;
 import tmanager.object.support.Result;
 import easyjdbc.query.QueryExecuter;
 import easyjdbc.query.raw.GetRecordsQuery;
@@ -20,13 +21,17 @@ public class AgentController {
 
 	@Post("/api/agents/new")
 	public Response newAgent(Http http) {
-		Agent agent = new Agent();
 		String childId = http.getParameter("childId");
+		String parentId = http.getParameter("agentId");
+		if (childId.equals(parentId))
+			return new Json(new Result(false, "하위 스케줄러에 자신을 추가할 수 없습니다."));
+		Agent agent = new Agent();
 		agent.setId(childId);
+		agent.setOwnerId(parentId);
 		QueryExecuter qe = new QueryExecuter();
 		int result = qe.insert(agent);
 		AgentRelation agentRelation = new AgentRelation();
-		String parentId = http.getParameter("agentId");
+
 		agentRelation.setParent(parentId);
 		agentRelation.setChild(childId);
 		result += qe.insert(agentRelation);
@@ -38,9 +43,12 @@ public class AgentController {
 
 	@Post("/api/agents/update")
 	public Response update(Http http) {
-		Agent agent = http.getJsonObject(Agent.class, "agent");
+		Agent passed = http.getJsonObject(Agent.class, "agent");
 		QueryExecuter qe = new QueryExecuter();
-		int result = qe.update(agent);
+		Agent agent = qe.get(Agent.class, passed.getId());
+		if (!agent.hasUpdateRight(qe, http.getSessionAttribute(User.class,"user").getId()))
+			return new Json(new Result(false, "수정권한이 없습니다."));
+		int result = qe.update(passed);
 		qe.close();
 		if (result == 0)
 			return new Json(new Result(false, "DB 입력중 오류가 발생했습니다."));
@@ -49,8 +57,10 @@ public class AgentController {
 
 	@Post("/api/agents/delete")
 	public Response delete(Http http) {
-		AgentRelation agentRelation = http.getJsonObject(AgentRelation.class, "agentRelation");
 		QueryExecuter qe = new QueryExecuter();
+		AgentRelation agentRelation = http.getJsonObject(AgentRelation.class, "agentRelation");
+		if(agentRelation.parentEqualsChild())
+			return new Json(new Result(false, "자기자신을 지울 수 없습니다."));
 		int result = qe.delete(agentRelation);
 		qe.close();
 		if (result == 0)
@@ -69,8 +79,10 @@ public class AgentController {
 		List<AgentRelation> list = qe.getList(AgentRelation.class, "parent=?", agentId);
 		List<Agent> agentList = new ArrayList<Agent>();
 		Agent parent = qe.get(Agent.class, agentId);
-		if (parent != null)
+		if (parent != null) {
+			parent.getSchedulesAndLines(qe, start, end, 0);
 			agentList.add(parent);
+		}
 		list.forEach(each -> {
 			Agent agent = each.getChildAgent(qe);
 			if (agent != null) {
@@ -90,6 +102,8 @@ public class AgentController {
 		end.setTime(Long.parseLong(http.getParameter("end")));
 		String parentId = http.getParameter("parentId");
 		String agentId = http.getParameter("agentId");
+		if (parentId.equals(agentId))
+			return new Json(new Result(false, "하위 스케줄러에 자신을 추가할 수 없습니다."));
 		QueryExecuter qe = new QueryExecuter();
 		Agent agent = qe.get(Agent.class, agentId);
 		agent.getSchedulesAndLines(qe, start, end, 4); // 레벨은 리커션 딥서치레벨
@@ -104,7 +118,7 @@ public class AgentController {
 	@Post("/api/agents/search")
 	public Response search(Http http) {
 		String keyword = http.getParameter("keyword");
-		GetRecordsQuery query = new GetRecordsQuery(2, "select * from agent where name like '%" + keyword + "%' or id like'%" + keyword + "%'");
+		GetRecordsQuery query = new GetRecordsQuery(2, "select * from agent where openType!=0 and (name like '%" + keyword + "%' or id like'%" + keyword + "%')");
 		QueryExecuter qe = new QueryExecuter();
 		List<List<Object>> result = qe.execute(query);
 		qe.close();

@@ -12,6 +12,7 @@
 <br><br><br><br>
 
 <div class="container" ng-controller="timetable">
+	<h1>{{agents[0].name||"무제"}}<small>({{agents[0].id}})</small></h1>
     <div class="row">
         <div class="col-md-4">
             <div class="dropdown">
@@ -68,6 +69,7 @@
                                     </div>
                                     <ul class="dropdown-menu">
                                         <li role="presentation" class="dropdown-header">ID : {{agent.id}}</li>
+                                        <li ng-click="toChildLink(agent)"><a>{{agent.name||"무제"}}</a></li>
                                         <li ng-click="newSchedule(agent)"><a>스케줄 추가하기+</a></li>
                                         <li ng-click="newLine(agent)"><a>데드라인 추가하기+</a></li>
                                         <li ng-click="deleteAgent(agent)"><a>스케줄러 삭제</a></li>

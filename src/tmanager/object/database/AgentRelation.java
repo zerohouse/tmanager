@@ -37,4 +37,8 @@ public class AgentRelation {
 		return qe.get(Agent.class, parent);
 	}
 
+	public boolean parentEqualsChild() {
+		return parent.equals(child);
+	}
+
 }

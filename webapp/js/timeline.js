@@ -236,12 +236,17 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         if ($scope.start == undefined) {
             return;
         }
-        if ($scope.start == undefined) {
+        if ($scope.end == undefined) {
             return;
         }
         var start = new Date($scope.start);
-        var end = new Date($scope.start);
-
+        var end = new Date($scope.end);
+        if(!isValidDate(start))
+        	return;
+        if(!isValidDate(end))
+        	return;
+        
+        	
         while (start <= end) {
             var each = new Date(start);
             quantum.push(each);
@@ -257,7 +262,13 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
             agentsParseDate();
             setDraggableAndResizable();
             $('html').removeClass("loading");
-        }, {start: $scope.start.getTime(), end: $scope.start.getTime(), agentId: $scope.setting.agentId});
+        }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: $scope.setting.agentId});
+        
+        function isValidDate(d) {
+        	  if ( Object.prototype.toString.call(d) !== "[object Date]" )
+        	    return false;
+        	  return !isNaN(d.getTime());
+        	}
     };
 
     // 워치 변수들
@@ -270,7 +281,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     if(setting.dateStart.length>1)
     	$scope.start = new Date(setting.dateStart);
     if(setting.dateEnd.length>1)
-    	$scope.start = new Date(setting.dateEnd);
+    	$scope.end = new Date(setting.dateEnd);
 
     $scope.stop = function (event) {
         if (event == undefined)
@@ -358,10 +369,14 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     
     $scope.addById = function(id){
         request('getAgentById', function (response) {
+        	if(response.errorMessage){
+        		alert(response.errorMessage);
+        		return;
+        	}
             $scope.agents.push(response);
             agentsParseDate();
             setDraggableAndResizable();
-        }, {start: $scope.start.getTime(), end: $scope.start.getTime(), agentId: id, parentId: $scope.setting.agentId});
+        }, {start: $scope.start.getTime(), end: $scope.end.getTime(), agentId: id, parentId: $scope.setting.agentId});
     }
 
 
@@ -391,7 +406,12 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         forSend.startTime = schedule.startTime.getString();
         forSend.endTime = schedule.endTime.getString();
         request('newSchedule', function (response) {
-            schedule.id = response.id;
+        	if(response.errorMessage){
+        		alert(response.errorMessage);
+        		return;
+        	}
+        	schedule.id = response.id;
+        	schedule.ownerId = response.id;
             agent.schedules.push(schedule);
             setDraggableAndResizable();
         }, {schedule: JSON.stringify(forSend)});
@@ -408,7 +428,12 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         forSend.agentId = agent.id;
         forSend.time = line.time.getString();
         request('newLine', function (response) {
+        	if(response.errorMessage){
+        		alert(response.errorMessage);
+        		return;
+        	}
             line.id = response.id;
+            line.ownerId = response.id;
             agent.lines.push(line);
             setDraggableAndResizable();
         }, {line: JSON.stringify(forSend)});
@@ -426,6 +451,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     $scope.updateSchedule = function (schedule, drag) {
     	var forSend = {};
     	forSend.id = schedule.id;
+    	forSend.agentId = schedule.agentId;
         if (!drag) {
         	forSend.head = schedule.newhead;
         	forSend.body = schedule.newbody;
@@ -443,6 +469,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
     $scope.updateLine = function (line, drag) {
     	var forSend = {};
     	forSend.id = line.id;
+    	forSend.agentId = line.agentId;
         if (!drag) {
         	forSend.head = line.newhead;
         	forSend.body = line.newbody;
@@ -481,6 +508,22 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         }
         $scope.$apply();
     });
+    
+    // 스케줄 각자의 링크로 연결
+    $scope.toChildLink = function(agent){
+    	var link = '/tmanager/';
+    	var start = $scope.start;
+    	var end = $scope.end;
+    	if(start == undefined){
+    		document.location.href = link + agent.id;
+    		return;
+    	}
+    	if(end == undefined){
+    		document.location.href = link + agent.id;
+    		return;
+    	}
+    	document.location.href = link + agent.id + "/" + start.dayString() + "/" + end.dayString();
+    }
 
     
     //여기서부터 모달 부분

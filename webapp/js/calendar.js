@@ -127,9 +127,23 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
             for (var j = 0; j < $scope.agents[i].schedules.length; j++) {
                 var startTime = new Date($scope.agents[i].schedules[j].startTime);
                 var endTime = new Date($scope.agents[i].schedules[j].endTime);
+                var k = 0;
                 while(startTime <= endTime){
-                	days[startTime.dayString()].schedules.push($scope.agents[i].schedules[j]);
+                	var schedule = {};
+                	schedule.startTime = new Date($scope.agents[i].schedules[j].startTime);
+                	schedule.endTime = new Date($scope.agents[i].schedules[j].endTime);
+                	schedule.name = $scope.agents[i].schedules[j].name;
+                	if(k!=0){
+                		schedule.startTime.setHours(0);
+                		schedule.startTime.setMinutes(0);
+                	}
+                	if(startTime.getDate() + 1 < endTime.getDate()){
+                		schedule.endTime.setHours(23);
+                		schedule.endTime.setMinutes(59);
+                	}
+                	days[startTime.dayString()].schedules.push(schedule);
                 	startTime.setDate(startTime.getDate()+1);
+                	k++;
                 }
             }
             for (var j = 0; j < $scope.agents[i].lines.length; j++) {
@@ -143,6 +157,9 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
 
     $scope.$watch('end', refresh);
     
+    $scope.start= new Date();
+    $scope.end = new Date($scope.start.getTime() + 60*60*1000*24*7);
+   
     if(setting.dateStart.length>1)
     	$scope.start = new Date(setting.dateStart);
     if(setting.dateEnd.length>1)

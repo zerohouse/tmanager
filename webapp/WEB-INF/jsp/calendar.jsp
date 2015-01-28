@@ -12,6 +12,7 @@
 <br><br><br><br>
 
 <div class="container" ng-controller="timetable">
+	<h1>{{agents[0].name||"무제"}}<small>({{agents[0].id}})</small></h1>
     <div class="row">
         <div class="col-md-4">
             <div class="dropdown">
@@ -45,9 +46,9 @@
                 <tbody>
                 <tr ng-repeat="week in weeks">
                     <th class="left-header">Week {{weeks.indexOf(week)+1}}</th>
-                    <td ng-repeat="day in week">{{day.date|date:"M-d"}}
-                    <div ng-repeat="schedule in day.schedules" ng-click="showSchedule(schedule)">{{schedule.head||"S"}} {{schedule.startTime|date:"M-d HH:mm"}}~{{schedule.endTime|date:"M-d HH:mm"}}</div>
-                    <div ng-repeat="line in day.lines" ng-click="showSchedule(line)">{{line.head||"L"}} {{line.time|date:"M-d HH:mm"}}까지</div>
+                    <td ng-repeat="day in week">{{day.date|date:"M월 d일"}}
+                    <div ng-repeat="schedule in day.schedules" class="table-schedule" ng-click="showSchedule(schedule)"><small>{{schedule.startTime|date:"HH:mm"}}~{{schedule.endTime|date:"HH:mm"}}</small><div>{{schedule.head||"S"}}</div></div>
+                    <div ng-repeat="line in day.lines" class="table-schedule" ng-click="showSchedule(line)"><small>{{line.time|date:"HH:mm"}}<div>{{line.head||"L"}}</div></div>
                     </td>
                 </tr>
                 </tbody>

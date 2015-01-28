@@ -1,5 +1,6 @@
 package tmanager.controllers;
 
+import tmanager.object.database.Agent;
 import tmanager.object.database.User;
 import tmanager.object.support.Result;
 import easyjdbc.query.QueryExecuter;
@@ -38,9 +39,13 @@ public class UserController {
 			qe.close();
 			return new Json(new Result(false, "DB입력 중 오류가 발생하였습니다."));
 		}
+		Agent agent = new Agent();
+		agent.setId(user.getId());
+		agent.setOwnerId(user.getId());
+		qe.insert(agent);
 		http.setSessionAttribute("user", user);
 		qe.close();
-		return new Json(new Result(true, null));
+		return new Json(new Result(true, user.getId()));
 	}
 
 	@Post("/api/users/logout")

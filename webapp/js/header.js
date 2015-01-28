@@ -139,6 +139,7 @@ app.controller('loginController', ['$scope', '$http', function($scope, $http){
 	    request('register', function (response) {
 	    	if(response.success){
 	    		$scope.logged = true;
+	    		setting.agentId = response.errorMessage;
 	    		return;
 	    	}
 	    	$scope.errorMessage = response.errorMessage;

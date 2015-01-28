@@ -13,21 +13,31 @@ public class Agent {
 
 	@Key
 	private String id;
+	private String ownerId;
 	private String name;
 	private Integer openType;
 	
 	@Exclude
 	public final static Integer TYPE_PRIVATE = 0;
 	@Exclude
-	public final static Integer TYPE_PUBIC = 1;
+	public final static Integer TYPE_VIEW_ONLY = 1;
 	@Exclude
-	public final static Integer TYPE_PUBLIC_ALL = 2;
+	public final static Integer TYPE_PUBLIC = 2;
 	
 	
 	@Exclude
 	private List<Schedule> schedules;
 	@Exclude
 	private List<Line> lines;
+	
+	public String getOwnerId() {
+		return ownerId;
+	}
+
+	public void setOwnerId(String ownerId) {
+		this.ownerId = ownerId;
+	}
+
 
 	public void getSchedulesAndLines(QueryExecuter qe, Date from, Date to, int level) {
 		SchedulesAndLines ar = new SchedulesAndLines(qe, from, to, id, level);
@@ -57,6 +67,25 @@ public class Agent {
 
 	public void setOpenType(Integer openType) {
 		this.openType = openType;
+	}
+	
+	public boolean hasViewRight(QueryExecuter qe, String userId) {
+		Agent agent = qe.get(Agent.class, id);
+		this.openType = agent.getOpenType();
+		if(openType == TYPE_PUBLIC)
+			return true;
+		if(openType == TYPE_VIEW_ONLY)
+			return true;
+		return ownerId.equals(userId);
+	}
+
+
+	public boolean hasUpdateRight(QueryExecuter qe, String userId) {
+		Agent agent = qe.get(Agent.class, id);
+		this.openType = agent.getOpenType();
+		if(openType == TYPE_PUBLIC)
+			return true;
+		return ownerId.equals(userId);
 	}
 
 }
