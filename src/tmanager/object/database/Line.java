@@ -21,6 +21,11 @@ public class Line {
 		return id;
 	}
 
+	@Override
+	public String toString() {
+		return "Line [id=" + id + ", agentId=" + agentId + ", time=" + time + ", head=" + head + ", body=" + body + "]";
+	}
+
 	public void setId(Integer id) {
 		this.id = id;
 	}

@@ -35,6 +35,11 @@ public class UserController {
 			qe.close();
 			return new Json(new Result(false, "이미 있는 아이디입니다."));
 		}
+		if (qe.get(Agent.class, user.getId()) != null) {
+			qe.close();
+			return new Json(new Result(false, "이미 있는 아이디입니다."));
+		}
+		
 		if (qe.insert(user) == 0) {
 			qe.close();
 			return new Json(new Result(false, "DB입력 중 오류가 발생하였습니다."));

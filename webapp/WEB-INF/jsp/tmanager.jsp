@@ -91,7 +91,7 @@
 
                             <div><span ng-click="toggleModify(schedule);stop($event)" ng-show="!schedule.modify">
                                 <h4>{{schedule.head||"제목"}}</h4></span>
-                                <input ng-enter="toggleModify(schedule);updateSchedule(schedule)" ng-click="stop($event)"
+                                <input ng-enter="toggleModify(schedule);update(schedule)" ng-click="stop($event)"
                                        ng-show="schedule.modify"
                                        class="form-control" ng-model="schedule.newhead" ng-init="schedule.newhead = schedule.head">
                             </div>
@@ -105,7 +105,7 @@
 
                             <div><span ng-click="toggleModify(line);stop($event)" ng-show="!line.modify">
                                 <h4>{{line.head||"제목"}}</h4></span>
-                                <input ng-enter="toggleModify(line);updateLine(line)" ng-click="stop($event)"
+                                <input ng-enter="toggleModify(line);update(line)" ng-click="stop($event)"
                                        ng-show="line.modify"
                                        class="form-control" ng-model="line.newhead" ng-init="line.newhead = line.head">
                             </div>

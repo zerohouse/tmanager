@@ -10,7 +10,7 @@
                     <h4 class="modal-title" id="myModalLabel">
                         <div><span ng-click="toggleModify(selectedHead);stop($event)"
                                    ng-show="!selectedHead.modify">{{selectedSchedule.head||"제목"}}</span>
-                            <input ng-click="stop($event)" ng-enter="toggleModify(selectedHead);updateSchedule(selectedSchedule)"
+                            <input ng-click="stop($event)" ng-enter="toggleModify(selectedHead);update(selectedSchedule)"
                                    ng-show="selectedHead.modify"
                                    class="form-control" ng-model="selectedSchedule.newhead" ng-init="selectedSchedule.newhead = selectedSchedule.head">
                         </div>
@@ -24,7 +24,7 @@
                         <textarea ng-click="stop($event)"
                                   class="form-control"
                                   ng-model="selectedSchedule.newbody" ng-init="selectedSchedule.newbody = selectedSchedule.body">{{selectedSchedule.newbody||"내용"}}</textarea>
-                        <div class="btn btn-success" ng-click="updateSchedule(selectedSchedule)">수정하기</div>
+                        <div class="btn btn-success" ng-click="update(selectedSchedule)">수정하기</div>
                         </div>
                     </div>
                 </div>

@@ -132,6 +132,9 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                 var k = 0;
                 while(startTime <= endTime){
                 	var schedule = {};
+                	schedule.head = $scope.agents[i].schedules[j].head;
+                	schedule.agentId = $scope.agents[i].schedules[j].agentId;
+                	schedule.id = $scope.agents[i].schedules[j].id;
                 	schedule.startTime = new Date($scope.agents[i].schedules[j].startTime);
                 	schedule.endTime = new Date($scope.agents[i].schedules[j].endTime);
                 	schedule.name = $scope.agents[i].schedules[j].name;
@@ -200,25 +203,38 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         request('updateAgent', ifFailsWarring, {agent: JSON.stringify({id: agent.id, name: agent.name})});
     };
 
-    $scope.updateSchedule = function (schedule) {
-    	var forSend = {};
-    	forSend.id = schedule.id;
-        forSend.head = schedule.newhead;
-        forSend.body = schedule.newbody;
-        schedule.head = schedule.newhead;
-        schedule.body = schedule.newbody;
-        request('updateSchedule', ifFailsWarring, {schedule: JSON.stringify(forSend)});
+    $scope.update = function (obj, drag) {
+    	var forSend = sendObject(obj);
+    	if(forSend.time == undefined){
+    		request('updateSchedule', ifFailsWarring, {schedule: JSON.stringify(forSend)});
+    		return;
+    	}
+    	request('updateLine', ifFailsWarring, {line: JSON.stringify(forSend)});
     };
-
-    $scope.updateLine = function (line, drag) {
+    
+    var sendObject = function (obj){
     	var forSend = {};
-    	forSend.id = line.id;
-        forSend.head = line.newhead;
-        forSend.body = line.newbody;
-        line.head = line.newhead;
-        line.body = line.newbody;
-        request('updateLine', ifFailsWarring, {line: JSON.stringify(forSend)});
-    };
+    	if(obj.id!=undefined)
+    		forSend.id = obj.id;
+    	if(obj.agentId!=undefined)
+    		forSend.agentId = obj.agentId;
+    	if(obj.newhead!=undefined){
+    		forSend.head = obj.newhead;
+    		obj.head = obj.newhead;
+    	}
+    	if(obj.newbody!=undefined){
+    		forSend.body = obj.newbody;
+    		obj.body = obj.newbody;
+    	}
+    	if(obj.startTime!=undefined)
+    		forSend.startTime = obj.startTime.getString();
+    	if(obj.endTime!=undefined)
+    		forSend.endTime = obj.endTime.getString();
+    	if(obj.time!=undefined)
+    		forSend.time = obj.time.getString();
+    	return forSend;
+    }
+    
 
 
     // 숨기기 기능

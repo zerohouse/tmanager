@@ -34,7 +34,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     angular.element($(this)).scope().$apply();
                 },
                 stop: function (event, ui) {
-                	$scope.updateSchedule(angular.element($(this)).scope().schedule, true);
+                	$scope.update(angular.element($(this)).scope().schedule, true);
                     if (ui.position.left == ui.originalPosition.left)
                         return;
                     if(angular.element($(this)).scope().agent.id!=angular.element($(this)).scope().schedule.agentId){
@@ -52,7 +52,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     var moved = $scope.agents[agentIndex].schedules.splice(scheduleIndex, scheduleIndex + 1)[0];
                     moved.agentId = $scope.agents[agentIndex + diff].id;
                     $scope.agents[agentIndex + diff].schedules.push(moved);
-                    $scope.updateSchedule(angular.element($(this)).scope().schedule, true);
+                    $scope.update(angular.element($(this)).scope().schedule, true);
                     setDraggableAndResizable();
                 }
             }).resizable({
@@ -63,7 +63,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     var startTime = angular.element($(this)).scope().schedule.startTime.getTime();
                     angular.element($(this)).scope().schedule.endTime.setTime(startTime + diff);
                     angular.element($(this)).scope().$apply();
-                    $scope.updateSchedule(angular.element($(this)).scope().schedule, true);
+                    $scope.update(angular.element($(this)).scope().schedule, true);
                     noClick = true;
                 }
             });
@@ -81,7 +81,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     angular.element($(this)).scope().$apply();
                 },
                 stop: function (event, ui) {
-                	$scope.updateLine(angular.element($(this)).scope().line, true);
+                	$scope.update(angular.element($(this)).scope().line, true);
                     if (ui.position.left == ui.originalPosition.left)
                         return;
                     if(angular.element($(this)).scope().agent.id!=angular.element($(this)).scope().line.agentId){
@@ -99,7 +99,7 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
                     var moved = $scope.agents[agentIndex].lines.splice(lineIndex, lineIndex + 1)[0];
                     moved.agentId = $scope.agents[agentIndex + diff].id;
                     $scope.agents[agentIndex + diff].lines.push(moved);
-                    $scope.updateLine(angular.element($(this)).scope().line, true);
+                    $scope.update(angular.element($(this)).scope().line, true);
                     setDraggableAndResizable();
                 }
             })
@@ -453,40 +453,38 @@ app.controller('timetable', ['$scope', '$timeout', '$http', function ($scope, $t
         request('updateAgent', ifFailsWarring, {agent: JSON.stringify({id: agent.id, name: agent.name})});
     };
 
-    $scope.updateSchedule = function (schedule, drag) {
-    	var forSend = {};
-    	forSend.id = schedule.id;
-    	forSend.agentId = schedule.agentId;
-        if (!drag) {
-        	forSend.head = schedule.newhead;
-        	forSend.body = schedule.newbody;
-        	schedule.head = schedule.newhead;
-        	schedule.body = schedule.newbody;
-        	request('updateSchedule', ifFailsWarring, {schedule: JSON.stringify(forSend)});
-        	return;
-        }
-        forSend.agentId = schedule.agentId;
-        forSend.startTime = schedule.startTime.getString();
-        forSend.endTime = schedule.endTime.getString();
-        request('updateSchedule', ifFailsWarring, {schedule: JSON.stringify(forSend)});
+    $scope.update = function (obj) {
+    	var forSend = sendObject(obj);
+    	if(forSend.time == undefined){
+    		request('updateSchedule', ifFailsWarring, {schedule: JSON.stringify(forSend)});
+    		return;
+    	}
+    	request('updateLine', ifFailsWarring, {line: JSON.stringify(forSend)});
     };
+    
+    var sendObject = function (obj){
+    	var forSend = {};
+    	if(obj.id!=undefined)
+    		forSend.id = obj.id;
+    	if(obj.agentId!=undefined)
+    		forSend.agentId = obj.agentId;
+    	if(obj.newhead!=undefined){
+    		forSend.head = obj.newhead;
+    		obj.head = obj.newhead;
+    	}
+    	if(obj.newbody!=undefined){
+    		forSend.body = obj.newbody;
+    		obj.body = obj.newbody;
+    	}
+    	if(obj.startTime!=undefined)
+    		forSend.startTime = obj.startTime.getString();
+    	if(obj.endTime!=undefined)
+    		forSend.endTime = obj.endTime.getString();
+    	if(obj.time!=undefined)
+    		forSend.time = obj.time.getString();
+    	return forSend;
+    }
 
-    $scope.updateLine = function (line, drag) {
-    	var forSend = {};
-    	forSend.id = line.id;
-    	forSend.agentId = line.agentId;
-        if (!drag) {
-        	forSend.head = line.newhead;
-        	forSend.body = line.newbody;
-        	line.head = line.newhead;
-        	line.body = line.newbody;
-        	request('updateLine', ifFailsWarring, {line: JSON.stringify(forSend)});
-        	return;
-        }
-        forSend.agentId = line.agentId;
-        forSend.time = line.time.getString();
-        request('updateLine', ifFailsWarring, {line: JSON.stringify(forSend)});
-    };
     
     var agentsParseDate = function(){
     	for (var i = 0; i < $scope.agents.length; i++) {
