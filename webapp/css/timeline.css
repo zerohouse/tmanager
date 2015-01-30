@@ -71,6 +71,10 @@
 	border-radius: 8px;
 	border: 1px solid #eee;
 	box-shadow: 1px 1px 1px silver;
+	overflow:hidden;
+}
+.schedule:hover {
+	overflow:visible;
 }
 
 .schedule-time {
